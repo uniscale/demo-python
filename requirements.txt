@@ -1,0 +1,7 @@
+quart==0.18.4
+Werkzeug==2.2.2
+requests==2.31.0
+quart-cors==0.6.0
+pytest==7.4.2
+pytest-asyncio==0.21.1
+actorcharacter-messagethreads==1.0.6
