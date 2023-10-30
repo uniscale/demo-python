@@ -23,23 +23,31 @@ users = {}
 
 session: Optional[DispatcherSession] = None
 
+
 @app.before_serving
 async def setup_session():
     global session
-    session = await builder.with_interceptors(lambda i: i
-        .intercept_request(Patterns.account.get_or_register.all_request_usages,
-                           Patterns.account.get_or_register.handle(_get_or_register))
-        .intercept_request(Patterns.account.lookup_users.all_request_usages,
-                           Patterns.account.lookup_users.handle(_lookup_users))
-        .intercept_request(Patterns.account.search_all_users.all_request_usages,
-                           Patterns.account.search_all_users.handle(_search_all_users))
-                                             ).build()
+    session = await builder.with_interceptors(
+        lambda i: i.intercept_request(
+            Patterns.account.get_or_register.all_request_usages,
+            Patterns.account.get_or_register.handle(_get_or_register),
+        )
+        .intercept_request(
+            Patterns.account.lookup_users.all_request_usages,
+            Patterns.account.lookup_users.handle(_lookup_users),
+        )
+        .intercept_request(
+            Patterns.account.search_all_users.all_request_usages,
+            Patterns.account.search_all_users.handle(_search_all_users),
+        )
+    ).build()
 
-@app.route('/api/service-to-module/<string:featureId>', methods=['POST'])
+
+@app.route("/api/service-to-module/<string:featureId>", methods=["POST"])
 async def handle_request(featureId):
     data = await request.get_data()
     result = await session.accept_gateway_request(data)
-    return result.to_json(), 200, {'Content-Type': 'application/json'}
+    return result.to_json(), 200, {"Content-Type": "application/json"}
 
 
 def _get_or_register(input: string, ctx: FeatureContext) -> Result[UserFull]:
@@ -58,19 +66,23 @@ def _get_or_register(input: string, ctx: FeatureContext) -> Result[UserFull]:
 
 
 def _lookup_users(input: List[UUID], ctx: FeatureContext) -> Result[List[UserFull]]:
-    filtered_users = {key: users[key] for key in input}
-    # TODO: Fix error when not found
-    return Result.ok(filtered_users)
+    filtered_users = []
+    for key in users.keys():
+        if key in input:
+            filtered_users.append(users[key])
+    return Result.ok(list(filtered_users))
 
 
 def _search_all_users(input: string, ctx: FeatureContext) -> Result[List[UserFull]]:
     filtered_users = []
-    # TODO: create user filter
+    for key, value in users.items():
+        if input.lower() in value.handle.lower():
+            filtered_users.append(users[key])
     return Result.ok(list(filtered_users))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     config = configparser.ConfigParser()
-    config.read('config.ini')
+    config.read("config.ini")
 
-    app.run(port=config.getint('Account', 'port'))
+    app.run(port=config.getint("Account", "port"))
