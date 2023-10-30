@@ -23,7 +23,7 @@ python -m venv env
 ```bash
 pip install --extra-index-url https://{username}:{password}@sdk.uniscale.com/api/packages/{organisation}/pypi/simple -r requirements.txt
 ```
-This command will install all the required dependencies for the program. Replace `{username}` and `{password}` with information
+This command will install all the required dependencies for the program. Replace `{username}`, `{password}` and `{organisation}` with information
 from `Demo company`.
 
 ### Run program
